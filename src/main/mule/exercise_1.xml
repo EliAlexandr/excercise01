@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1a4a6c6c-0c72-4b13-8751-aef13c7ea161" >
+		<http:listener-connection host="0.0.0.0" port="8089" />
+	</http:listener-config>
+	<flow name="exercise_1Flow" doc:id="aed8fa52-8de7-4c2f-9eac-bfa8df64b098" >
+		<http:listener doc:name="Listener" doc:id="6a5bd2fb-ae42-43b3-8f52-f711b81bcf75" config-ref="HTTP_Listener_config" path="/hw1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ac2f25f7-9796-40a9-afc1-a56d5a56607f" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="4c973c65-2064-4ac2-b798-5f332e829caa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	 	invoiceNumber: trim(payload.Invoice.InvoiceNumber),
+		invoiceDate: payload.Invoice.InvoiceDate,
+		invoiceType: payload.Invoice.InvoiceType,
+					
+	 ITEMS: payload.Invoice.Items.*Item map(material) -> {
+	    itemNumber: material.ItemNumber,
+		materialId: upper(trim(material.MaterialId)),
+		description: trim(material.Description),
+		price: material.Price,	
+		totalAmount: material.TotalAmount
+	}
+	
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
